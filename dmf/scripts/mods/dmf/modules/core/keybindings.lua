@@ -38,6 +38,10 @@ local SUPPORTED_DEVICES = {
   "mouse",
 }
 
+local function is_mouse_key(global_name)
+  return global_name == "mouse_left" or global_name == "mouse_right"
+end
+
 -- #####################################################################################################################
 -- ##### Local functions ###############################################################################################
 -- #####################################################################################################################
@@ -377,7 +381,13 @@ function dmf.keywatch_result_to_local_keys(keywatch_result)
   if keywatch_result.main then
 
     local global_name = keywatch_result.main
-    local local_name = InputUtils.local_key_name(global_name, InputUtils.key_device_type(global_name))
+    local local_name
+
+    if is_mouse_key(global_name) then
+      local_name = global_name
+    else
+      local_name = InputUtils.local_key_name(global_name, InputUtils.key_device_type(global_name))
+    end
 
     -- Check for a missing or unbindable primary key name
     if not local_name or not dmf.can_bind_as_primary_key(local_name) then
@@ -390,7 +400,12 @@ function dmf.keywatch_result_to_local_keys(keywatch_result)
   -- Add the enablers keys as additional keys
   if keywatch_result.enablers then
     for _, global_name in ipairs(keywatch_result.enablers) do
-      local local_name = InputUtils.local_key_name(global_name, InputUtils.key_device_type(global_name))
+      local local_name
+      if is_mouse_key(global_name) then
+        local_name = global_name
+      else
+        local_name = InputUtils.local_key_name(global_name, InputUtils.key_device_type(global_name))
+      end
       keys[#keys + 1] = local_name
     end
   end
@@ -415,11 +430,15 @@ function dmf.local_keys_to_keywatch_result(keys)
     local local_name = keys[1]
     local global_name
 
-    -- Check all supported devices for the global name
-    for _, device_type in ipairs(SUPPORTED_DEVICES) do
-      global_name = InputUtils.local_to_global_name(local_name, device_type)
-      if get_corresponding_device(global_name) then
-        break
+    if is_mouse_key(local_name) then
+      global_name = local_name
+    else
+      -- Check all supported devices for the global name
+      for _, device_type in ipairs(SUPPORTED_DEVICES) do
+        global_name = InputUtils.local_to_global_name(local_name, device_type)
+        if get_corresponding_device(global_name) then
+          break
+        end
       end
     end
 
@@ -439,11 +458,15 @@ function dmf.local_keys_to_keywatch_result(keys)
     local local_name = keys[i]
     local global_name
 
-    -- Check all supported devices for the global name
-    for _, device_type in ipairs(SUPPORTED_DEVICES) do
-      global_name = InputUtils.local_to_global_name(local_name,device_type)
-      if get_corresponding_device(global_name) then
-        break
+    if is_mouse_key(local_name) then
+      global_name = local_name
+    else
+      -- Check all supported devices for the global name
+      for _, device_type in ipairs(SUPPORTED_DEVICES) do
+        global_name = InputUtils.local_to_global_name(local_name,device_type)
+        if get_corresponding_device(global_name) then
+          break
+        end
       end
     end
 
